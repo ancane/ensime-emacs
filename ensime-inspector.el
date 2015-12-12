@@ -43,6 +43,19 @@
          (fullname (ensime-type-full-name-with-args type)))
     (message fullname)))
 
+(defun ensime-show-structure-view ()
+  "Show source file structure"
+  (interactive)
+   (let* ((structure (ensime-rpc-structure-view))
+          (view (plist-get structure :view))
+          (buffer-name ensime-inspector-buffer-name))
+     (ensime-with-inspector-buffer
+      (buffer-name view t)
+      (dolist (item view)
+        (insert (format "%s" item))
+        (insert "\n")
+        ))))
+
 (defun ensime-inspector-buffer-p (buffer)
   "Is this an ensime inspector buffer?"
   (eq (get-buffer ensime-inspector-buffer-name) buffer))
