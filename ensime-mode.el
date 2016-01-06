@@ -16,7 +16,7 @@
 
       (define-key prefix-map (kbd "C-v i") 'ensime-inspect-type-at-point)
       (define-key prefix-map (kbd "C-v 5 i")
-	'ensime-inspect-type-at-point-other-frame)
+        'ensime-inspect-type-at-point-other-frame)
       (define-key prefix-map (kbd "C-v p") 'ensime-inspect-package-at-point)
       (define-key prefix-map (kbd "C-v o") 'ensime-inspect-project-package)
       (define-key prefix-map (kbd "C-v r") 'ensime-show-uses-of-symbol-at-point)
@@ -264,7 +264,7 @@
 
         (add-hook 'after-save-hook 'ensime-run-after-save-hooks nil t)
 
-	(add-hook 'find-file-hook 'ensime-run-find-file-hooks nil t)
+        (add-hook 'find-file-hook 'ensime-run-find-file-hooks nil t)
 
         (add-hook 'ensime-source-buffer-saved-hook
                   'ensime-typecheck-current-buffer)
@@ -428,39 +428,48 @@
   information."
   (when ensime-mode
     (condition-case err
-	(let ((conn (ensime-connection-or-nil)))
-	  (cond ((and ensime-mode (not conn))
-		 (cond
-		  ((ensime-owning-server-process-for-source-file buffer-file-name)
-		   " [ENSIME: (Starting)]")
-		  (t " [ENSIME: (Disconnected)]")))
+        (let ((conn (ensime-connection-or-nil)))
+          (cond ((and ensime-mode (not conn))
+                 (cond
+                  ((ensime-owning-server-process-for-source-file buffer-file-name)
+                   " [ENSIME: (Starting)]")
+                  (t " [ENSIME: (Disconnected)]")))
 
-		((and ensime-mode (ensime-connected-p conn))
-		 (concat " ["
-			 (or (plist-get (ensime-config conn) :name)
-			     "ENSIME: (Connected)")
-			 (let ((status (ensime-modeline-state-string conn))
-			       (unready (not (ensime-analyzer-ready conn))))
-			   (cond (status (concat " (" status ")"))
-				 (unready " (Analyzing)")
-				 (t "")))
-			 (concat (format " : %s/%s"
-					 (ensime-num-errors conn)
-					 (ensime-num-warnings conn)))
-			 "]"))
-		(ensime-mode " [ENSIME: (Dead Connection)]")
-		))
+                ((and ensime-mode (ensime-connected-p conn))
+                 (concat " ["
+                         (or (plist-get (ensime-config conn) :name)
+                             "ENSIME: (Connected)")
+                         (let ((status (ensime-modeline-state-string conn))
+                               (unready (not (ensime-analyzer-ready conn))))
+                           (cond (status (concat " (" status ")"))
+                                 (unready " (Analyzing)")
+                                 (t "")))
+                         (concat (format " : %s/%s"
+                                         (ensime-num-errors conn)
+                                         (ensime-num-warnings conn)))
+                         "]"))
+                (ensime-mode " [ENSIME: (Dead Connection)]")
+                ))
       (error (progn
-	       " [ENSIME: wtf]"
-	       )))))
+               " [ENSIME: wtf]"
+               )))))
 
 (defun ensime-modeline-state-string (conn)
   "Return a string possibly describing CONN's state."
   (cond ((not (eq (process-status conn) 'open))
-	 (format "%s" (process-status conn)))
-	((let ((pending (length (ensime-rex-continuations conn))))
-	   (cond ((zerop pending) nil)
-		 (t (format "%s" pending)))))))
+         (format "%s" (process-status conn)))
+        ((let ((pending (length (ensime-rex-continuations conn))))
+           (cond ((zerop pending) nil)
+                 (t (format "%s" pending)))))))
+
+;;;;;; Imenu index function
+(defun ensime-imenu-create-index-function ()
+  (
+   ("(class) Test" . (point-min))
+   ("(object) Test" . (point-min))
+   ("(type) Test.Kleisli" . (point-min))
+   )
+  )
 
 (provide 'ensime-mode)
 
