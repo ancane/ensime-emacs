@@ -43,49 +43,28 @@
          (fullname (ensime-type-full-name-with-args type)))
     (message fullname)))
 
-(defconst rpc-structure-plist
-  '(:view
-    (
-     (:keyword "class"
-               :name "StructureView"
-               :position (:type line :file "/abc/def" :line 57)
-               :members nil
-               )
-     (:keyword "object"
-               :name "StructureView"
-               :position (:type line :file "/abc/def" :line 59)
-               :members ((:keyword "type"
-                                   :name "BasicType"
-                                   :position (:type offset :file "/abc/def" :offset 456)
-                                   :members nil)))))
-  )
-
-(message (format "%s" (plist-get rpc-structure-plist :view)))
-
-(-flatten (-map (lambda (x)
-                  (ensime-flatten-structure-view x '() nil)
-                  )
-                (plist-get rpc-structure-plist :view)))
-
-(defun ensime-show-structure-view ()
+(defun ensime-imenu-index-function ()
   "Show source file structure"
-  (interactive)
-  (let* ((structure (ensime-rpc-structure-view))
-         (view-plist (plist-get structure :view))
-         )))
+  (-flatten
+   (-map
+    (lambda (x) (ensime-flatten-structure-view x '() nil))
+    (plist-get (ensime-rpc-structure-view) :view))))
 
 (defun ensime-flatten-structure-view (member-plist result parent)
   (let* ((member-name (plist-get member-plist :name))
          (keyword (plist-get member-plist :keyword))
          (children (plist-get member-plist :members))
+	 (offset (plist-get (plist-get member-plist :position) :offset))
          (new-parent (if parent (format "%s.%s" parent member-name) member-name))
-         (index-item (cons (format"(%s)%s" keyword (if parent new-parent member-name)) ( ))))
+         (imenu-item (cons
+		      (format"%s:%s" keyword (if parent new-parent member-name))
+		      (ensime-point-at-offset offset))))
 
     (if children
         (-concat
-         (cons index-item result)
+         (cons imenu-item result)
          (-map (lambda (x) (ensime-flatten-structure-view x result new-parent)) children))
-      (cons index-item result)
+      (cons imenu-item result)
       )))
 
 (defun ensime-inspector-buffer-p (buffer)

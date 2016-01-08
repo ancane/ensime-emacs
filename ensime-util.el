@@ -322,6 +322,13 @@ This idiom is preferred over `lexical-let'."
  that are hidden by Emacs."
   (ensime-externalize-offset (point)))
 
+(defun ensime-point-at-offset (offset)
+  (save-excursion
+    (goto-char (ensime-internalize-offset offset))
+    (point)
+    )
+  )
+
 (defun ensime-computed-range ()
   (if (and transient-mark-mode mark-active)
       (list

@@ -291,7 +291,12 @@
           (setq tooltip-delay 1.0)
           (define-key ensime-mode-map [mouse-movement] 'ensime-mouse-motion))
 
-        (ensime-refresh-all-note-overlays))
+        (ensime-refresh-all-note-overlays)
+
+	(make-local-variable 'imenu-auto-rescan)
+	(make-local-variable 'imenu-create-index-function)
+	(setq imenu-auto-rescan t)
+	(setq imenu-create-index-function 'ensime-imenu-index-function))
     (progn
       (pcase ensime-completion-style
         (`auto-complete
@@ -461,15 +466,6 @@
         ((let ((pending (length (ensime-rex-continuations conn))))
            (cond ((zerop pending) nil)
                  (t (format "%s" pending)))))))
-
-;;;;;; Imenu index function
-(defun ensime-imenu-create-index-function ()
-  (
-   ("(class) Test" . (point-min))
-   ("(object) Test" . (point-min))
-   ("(type) Test.Kleisli" . (point-min))
-   )
-  )
 
 (provide 'ensime-mode)
 
