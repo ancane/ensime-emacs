@@ -571,6 +571,7 @@ inspect the package of the current source file."
          (imenu-item (cons
 		      member-name
                       (ensime-internalize-offset offset))))
+    (put-text-property 0 1 'symbol (substring keyword 0 1) member-name)
     (if children
 	(cons member-name
 	      (cons
