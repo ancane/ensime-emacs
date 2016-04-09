@@ -559,27 +559,24 @@ inspect the package of the current source file."
 
 (defun ensime-imenu-index-function ()
   "Function to be used for `imenu-create-index-function'."
-  (-flatten
-   (-map
-    (lambda (x) (ensime--flatten-structure-view x))
-    (plist-get (ensime-rpc-structure-view) :view))))
+  (-map
+   (lambda (x) (ensime--flatten-structure-view x))
+   (plist-get (ensime-rpc-structure-view) :view)))
 
-(defun ensime--flatten-structure-view (member-plist &optional result parent)
+(defun ensime--flatten-structure-view (member-plist)
   (let* ((member-name (plist-get member-plist :name))
          (keyword (plist-get member-plist :keyword))
          (children (plist-get member-plist :members))
          (offset (plist-get (plist-get member-plist :position) :offset))
-         (new-parent (if parent (format "%s.%s" parent member-name) member-name))
          (imenu-item (cons
-                      (format"%s:%s" keyword (if parent new-parent member-name))
+		      member-name
                       (ensime-internalize-offset offset))))
     (if children
-        (-concat
-         (cons imenu-item result)
-         (-map
-          (lambda (x) (ensime--flatten-structure-view x result new-parent))
-          children))
-      (cons imenu-item result))))
+	(cons member-name
+	      (cons
+	       (cons "." (ensime-internalize-offset offset))
+	       (-map (lambda (x) (ensime--flatten-structure-view x)) children)))
+      imenu-item)))
 
 (provide 'ensime-inspector)
 
